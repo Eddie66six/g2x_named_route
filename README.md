@@ -1,6 +1,6 @@
 # g2x_named_route
 
-A new Flutter package project.
+Package for named route
 
 ## Getting Started
 
