@@ -4,11 +4,43 @@ A new Flutter package project.
 
 ## Getting Started
 
-This project is a starting point for a Dart
-[package](https://flutter.dev/developing-packages/),
-a library module containing code that can be shared easily across
-multiple Flutter or Dart projects.
+    //create intance
+    var g2xRoute = G2xRoute();
+    
+    //define routes
+    g2xRoute.define(RouteDefinition(
+      route: "/",
+      page: (_, __) => SplashPage()
+    ));
+    g2xRoute.define(RouteDefinition(
+      route: "/home",
+      page: (_, __) => HomePage()
+    ));
+    //route parameters
+    g2xRoute.define(RouteDefinition(
+      route: "/home/details/:id/:n/:oo",
+      page: (Map<String, String>? parameters, dynamic args) {
+        //parameters: visible on route
+        if(parameters == null) return ErrorPage();
+        Widget? internalParameter;
+        if(args != null){
+          //args: not visible on route
+          internalParameter = args["center"];
+        }
+        return HomeDetailsPage(id: int.parse(parameters["id"].toString()));
+      }
+    ));
 
-For help getting started with Flutter, view our 
-[online documentation](https://flutter.dev/docs), which offers tutorials, 
-samples, guidance on mobile development, and a full API reference.
+    return MaterialApp(
+      title: 'Flutter Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      initialRoute: "/",
+      onGenerateRoute: g2xRoute.generate,// insert route into the app
+    );
+
+## Navigator
+    //use native navigator
+    //"/home/details/:id/:n/:oo"
+    Navigator.pushNamed(context, "/home/details/10/12/01", arguments: {"center": Center()});
