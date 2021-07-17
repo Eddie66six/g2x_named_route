@@ -9,12 +9,12 @@ class G2xRoute {
 
   int _currentIndexPage = -1;
   Route<dynamic>? generate(RouteSettings settings) {
-      _currentIndexPage = _routeList.indexWhere((e) => matchRoute(e.route, settings));
+    var _settings = updateRouteSettings(settings);
+      _currentIndexPage = _routeList.indexWhere((e) => matchRoute(e.route, _settings.name!));
     if(_currentIndexPage == -1) return null;
-    var _settings = settings;
     if(_routeList[_currentIndexPage].showQueryParameters){
-       if (_settings.arguments != null && _settings.arguments is Map<String, String>) {
-        _settings = RouteSettings(name: Uri(path: _settings.name, queryParameters: _settings.arguments as Map<String, String>).toString());
+      if (_settings.arguments != null && _settings.arguments is Map<String, String>) {
+        _settings = RouteSettings(name: Uri(path: _settings.name, queryParameters: _settings.arguments as Map<String, String>).toString(), arguments: _settings.arguments);
       }
     }
     var page = _routeList[_currentIndexPage].page(_parameters, _settings.arguments);
@@ -30,11 +30,16 @@ class G2xRoute {
     return newUrl.join("/");
   }
 
+   RouteSettings updateRouteSettings(RouteSettings routeSettings){
+    if(routeSettings.name!.indexOf("?") == -1) return routeSettings;
+    var uriData = Uri.parse(routeSettings.name!);
+    return RouteSettings(name: uriData.path, arguments: uriData.queryParameters);
+  }
+
   void _generateParameters (String routeNamed, String url){
      var arrayRouteWithParameter = url.split("/");
     var arrayRouteWithoutParameter = routeNamed.split("/");
-    if(_parameters == null)
-      _parameters = Map<String, String>();
+    _parameters = Map<String, String>();
     for (var i = 0; i < arrayRouteWithoutParameter.length; i++) {
       if(arrayRouteWithoutParameter[i].indexOf(":") > -1){
         _parameters![arrayRouteWithoutParameter[i].replaceFirst(":", "")] = arrayRouteWithParameter[i];
@@ -42,23 +47,15 @@ class G2xRoute {
     }
   }
 
-  bool matchRoute(String routeNamed, RouteSettings routeSettings){
-    if(routeNamed == routeSettings.name) return true;
-    if(routeSettings.name!.indexOf("?") > -1){
-      var uriData = Uri.parse(routeSettings.name!);
-      routeSettings = RouteSettings(name: uriData.path);
-      _parameters = Map<String, String>();
-      _parameters = Map.of(uriData.queryParameters);
-    }
-    if (!routeNamed.contains('/:')){
-      return routeNamed == routeSettings.name;
-    };
+  bool matchRoute(String routeNamed, String url){
+    if(routeNamed == url) return true;
+    if (!routeNamed.contains('/:')) return false;
     final regExp = RegExp(
       "^${_prepareToRegex(routeNamed)}\$",
       caseSensitive: true,
     );
-    if(regExp.hasMatch(routeSettings.name!)){
-      _generateParameters(routeNamed, routeSettings.name!);
+    if(regExp.hasMatch(url)){
+      _generateParameters(routeNamed, url);
       return true;
     }
     return false;
