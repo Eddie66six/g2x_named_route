@@ -67,6 +67,7 @@ class G2xRoute {
 
 ///Config route
 ///[showQueryParameters] if true, the [arguments] must be of type Map <String, String>
+///[arguments] contains List: convert list to string
 class RouteDefinition {
   String route;
   bool showQueryParameters;
